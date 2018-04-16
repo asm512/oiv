@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Xml.Linq;
 using System.IO;
 using ICSharpCode.SharpZipLib.Zip;
 using ICSharpCode.SharpZipLib.Core;
 using System.Drawing;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Linq;
 
 namespace oiv_Demo.OIVlib
 {
@@ -66,7 +64,7 @@ namespace oiv_Demo.OIVlib
                 if (!zipEntry.IsFile) { continue; }
                 String entryFileName = zipEntry.Name;
 
-                byte[] buffer = new byte[4096]; //4096 is optimal
+                byte[] buffer = new byte[4096]; //4096 is optimal for performance, noticeable especially for Zips > 1Gb
                 Stream zipStream = zf.GetInputStream(zipEntry);
 
                 String fullZipToPath = Path.Combine(oivExtractionPath, entryFileName);
@@ -92,15 +90,28 @@ namespace oiv_Demo.OIVlib
             {
                 try
                 {
-                    File.Delete(file);
+                    if (!file.Contains("icon")) { File.Delete(file); }
                 }
                 catch (Exception)
                 {
-                    foreach (var process in FileUtil.WhoIsLocking(file)) { MessageBox.Show(process.ToString()); }
+                    foreach (var process in FileUtil.WhoIsLocking(file)) { MessageBox.Show($"{process.ToString()} is preventing the file from being deleted"); }
                 }
             }
+            foreach(var dir in Directory.GetDirectories(RootFolder))
+            {
+                Directory.Delete(dir, true);
+            }
         }
-        
+
+        /// <summary>
+        /// Check whether the object is a valid OIV archive
+        /// </summary>
+        public bool IsValidOIV()
+        {
+            if (Directory.GetFiles(ExtractedPath, "assembly.xml", SearchOption.AllDirectories).Length > 0) { return true; }
+            else { return false; }
+        }
+
         private void SetRootFolder()
         {
             string[] searchResult = Directory.GetFiles(ExtractedPath, "assembly.xml", SearchOption.AllDirectories);
@@ -113,15 +124,6 @@ namespace oiv_Demo.OIVlib
                 throw new InvalidOperationException("Root folder could not be determined");
             }
             MessageBox.Show($"Root folder: {RootFolder}");
-        }
-
-        /// <summary>
-        /// Check whether the object is a valid OIV archive
-        /// </summary>
-        public bool IsValidOIV()
-        {
-            if (Directory.GetFiles(ExtractedPath, "assembly.xml", SearchOption.AllDirectories).Length > 0) { return true; }
-            else { return false; } 
         }
 
         /// <summary>
@@ -149,5 +151,51 @@ namespace oiv_Demo.OIVlib
                 return image;
             }
         }
+
+        public enum Package
+        {
+            Name,
+            Version,
+            DisplayName,
+            Description,
+            HeaderBackground,
+            IconBackground
+        }
+
+        private XDocument ContentXML;
+        private bool xmlLoaded = false;
+
+        //Maybe use XMLReader if files seem to be too big for XDocument to load them properly
+        private void LoadXML()
+        {
+            XDocument doc = XDocument.Load($"{RootFolder}\\assembly.xml");
+            ContentXML = doc;
+            xmlLoaded = true;
+        }
+
+        public string GetProperty(Package package)
+        {
+            if (!xmlLoaded) { LoadXML(); }
+            switch (package)
+            {
+                case Package.Name:
+                    var name = ContentXML.Root.Elements().Select(x => x.Element("name"));
+                    return name.First().Value;
+                case Package.Version:
+                    break;
+                case Package.DisplayName:
+                    break;
+                case Package.Description:
+                    break;
+                case Package.HeaderBackground:
+                    break;
+                case Package.IconBackground:
+                    break;
+                default:
+                    break;
+            }
+            return "";
+        }
+        
     }
 }

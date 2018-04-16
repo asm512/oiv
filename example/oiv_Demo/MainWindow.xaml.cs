@@ -28,7 +28,7 @@ namespace oiv_Demo
             muhOIV.AddLog(logRichTextbox);
             muhOIV.Open();
             oivIconDisplay.ImageSource = muhOIV.GetIcon();
-            this.Title = muhOIV.IsValidOIV().ToString();
+            this.Title = muhOIV.GetProperty(OIVlib.OIV.Package.Name);
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
