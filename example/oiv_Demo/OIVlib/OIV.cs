@@ -14,28 +14,31 @@ namespace oiv_Demo.OIVlib
 {
     class OIV
     {
-        string zipPath;
-        public string extractedPath;
-        public bool hasBeenOpened = false;
+        public string ZipPath { private set; get; }
+        public string ExtractedPath { private set; get; }
+        public bool HasBeenOpened { private set; get; }
         public string RootFolder { private set; get; }
         private System.Windows.Controls.RichTextBox logTextbox = null;
 
+        #region Constructor
+
         public OIV(string path)
         {
-            zipPath = path;
+            ZipPath = path;
+            HasBeenOpened = false;
         }
 
         public OIV(string path, System.Windows.Controls.RichTextBox rtb)
         {
-            zipPath = path;
+            ZipPath = path;
             logTextbox = rtb;
             logTextbox.IsReadOnly = true;
+            HasBeenOpened = false;
         }
 
-        private void AppendtoVisibleLog(string msg)
-        {
-            logTextbox.AppendText(msg + "\r\n");
-        }
+        #endregion Ctor
+
+        private void AppendtoVisibleLog(string msg) => logTextbox.AppendText(msg + "\r\n");
 
         public void AddLog(System.Windows.Controls.RichTextBox rtb)
         {
@@ -48,14 +51,14 @@ namespace oiv_Demo.OIVlib
         /// <param name="path">Explict path to which to extract</param>
         public void Open(string path = "")
         {
-            if (logTextbox != null) { AppendtoVisibleLog($"Opening {zipPath}"); }
-            if (hasBeenOpened) { if (logTextbox != null) { AppendtoVisibleLog("OIV package has already been extracted."); } throw new InvalidOperationException("OIV package has already been extracted."); }
+            if (logTextbox != null) { AppendtoVisibleLog($"Opening {ZipPath}"); }
+            if (HasBeenOpened) { if (logTextbox != null) { AppendtoVisibleLog("OIV package has already been extracted."); } throw new InvalidOperationException("OIV package has already been extracted."); }
             string oivExtractionPath;
-            if (path == "") { oivExtractionPath = $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\oiv\{Path.GetFileNameWithoutExtension(zipPath)}\"; }
+            if (path == "") { oivExtractionPath = $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\oiv\{Path.GetFileNameWithoutExtension(ZipPath)}\"; }
             else { oivExtractionPath = path; }
             if (!Directory.Exists(oivExtractionPath)) { Directory.CreateDirectory(oivExtractionPath); }
             ZipFile zf = null;
-            FileStream fs = File.OpenRead(zipPath);
+            FileStream fs = File.OpenRead(ZipPath);
             zf = new ZipFile(fs);
 
             foreach (ZipEntry zipEntry in zf)
@@ -75,8 +78,8 @@ namespace oiv_Demo.OIVlib
                     StreamUtils.Copy(zipStream, streamWriter, buffer);
                 }
             }
-            hasBeenOpened = true;
-            extractedPath = oivExtractionPath;
+            HasBeenOpened = true;
+            ExtractedPath = oivExtractionPath;
             SetRootFolder();
         }
 
@@ -100,7 +103,7 @@ namespace oiv_Demo.OIVlib
         
         private void SetRootFolder()
         {
-            string[] searchResult = Directory.GetFiles(extractedPath, "assembly.xml", SearchOption.AllDirectories);
+            string[] searchResult = Directory.GetFiles(ExtractedPath, "assembly.xml", SearchOption.AllDirectories);
             if (searchResult.Length > 0)
             {
                 RootFolder = Path.GetDirectoryName(searchResult[0]); 
@@ -117,7 +120,7 @@ namespace oiv_Demo.OIVlib
         /// </summary>
         public bool IsValidOIV()
         {
-            if (Directory.GetFiles(extractedPath, "assembly.xml", SearchOption.AllDirectories).Length > 0) { return true; }
+            if (Directory.GetFiles(ExtractedPath, "assembly.xml", SearchOption.AllDirectories).Length > 0) { return true; }
             else { return false; } 
         }
 
@@ -127,7 +130,7 @@ namespace oiv_Demo.OIVlib
         /// <returns>OIV Icon</returns>
         public BitmapImage GetIcon()
         {
-            if (!hasBeenOpened) { throw new InvalidOperationException("OIV package has not been opened"); }
+            if (!HasBeenOpened) { throw new InvalidOperationException("OIV package has not been opened"); }
             BitmapImage image = new BitmapImage(new Uri($@"{RootFolder}\icon.png", UriKind.Absolute));
             return image;
             //return ConvertBitmap(new Bitmap($@"{RootFolder}\icon.png"));
