@@ -37,6 +37,11 @@ namespace oiv_Demo.OIVlib
             logTextbox.AppendText(msg + "\r\n");
         }
 
+        public void AddLog(System.Windows.Controls.RichTextBox rtb)
+        {
+            logTextbox = rtb;
+        }
+
         /// <summary>
         /// Opens/Extracts the OIV so edits can be made
         /// </summary>
@@ -90,13 +95,11 @@ namespace oiv_Demo.OIVlib
                 {
                     foreach (var process in FileUtil.WhoIsLocking(file)) { MessageBox.Show(process.ToString()); }
                 }
-
             }
         }
         
         private void SetRootFolder()
         {
-            if (!hasBeenOpened) { if (logTextbox != null) { AppendtoVisibleLog("OIV package has not been opened."); } throw new InvalidOperationException("OIV package has not been opened"); }
             string[] searchResult = Directory.GetFiles(extractedPath, "assembly.xml", SearchOption.AllDirectories);
             if (searchResult.Length > 0)
             {
@@ -106,7 +109,7 @@ namespace oiv_Demo.OIVlib
             {
                 throw new InvalidOperationException("Root folder could not be determined");
             }
-            MessageBox.Show(RootFolder);
+            MessageBox.Show($"Root folder: {RootFolder}");
         }
 
         /// <summary>
@@ -125,7 +128,9 @@ namespace oiv_Demo.OIVlib
         public BitmapImage GetIcon()
         {
             if (!hasBeenOpened) { throw new InvalidOperationException("OIV package has not been opened"); }
-            return ConvertBitmap(new Bitmap($@"{RootFolder}\icon.png"));
+            BitmapImage image = new BitmapImage(new Uri($@"{RootFolder}\icon.png", UriKind.Absolute));
+            return image;
+            //return ConvertBitmap(new Bitmap($@"{RootFolder}\icon.png"));
         }
 
         private BitmapImage ConvertBitmap(Bitmap src)

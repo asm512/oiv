@@ -20,15 +20,14 @@ namespace oiv_Demo
     /// </summary>
     public partial class MainWindow : Window
     {
-        private OIVlib.OIV muhOIV;
+        private OIVlib.OIV muhOIV = new OIVlib.OIV("oivSample.zip");
 
         public MainWindow()
         {
             InitializeComponent();
-            muhOIV = new OIVlib.OIV(@"C:\Users\Jason\Desktop\oivSample.zip", logRichTextbox);
+            muhOIV.AddLog(logRichTextbox);
             muhOIV.Open();
-            //oivIconDisplay.ImageSource = muhOIV.GetIcon();
-            muhOIV.GetIcon();
+            oivIconDisplay.ImageSource = muhOIV.GetIcon();
             this.Title = muhOIV.IsValidOIV().ToString();
         }
 
@@ -39,7 +38,6 @@ namespace oiv_Demo
 
         private void Cleanup()
         {
-            oivIconDisplay.ImageSource = null;
             muhOIV.Close();
         }
     }
