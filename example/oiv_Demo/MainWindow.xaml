@@ -9,7 +9,8 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="24*"/>
-            <ColumnDefinition Width="71*"/>
+            <ColumnDefinition Width="28*"/>
+            <ColumnDefinition Width="43*"/>
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="0" Background="Silver">
             <Grid.RowDefinitions>
@@ -23,5 +24,21 @@
             </Rectangle>
             <RichTextBox Margin="5" Grid.Row="1" x:Name="logRichTextbox" IsReadOnly="True"></RichTextBox>
         </Grid>
+        <StackPanel Grid.Column="1" Margin="5">
+            <TextBlock FontSize="20">Package name:</TextBlock>
+            <TextBlock x:Name="nameDisplay"></TextBlock>
+            <TextBlock FontSize="20">Author name:</TextBlock>
+            <TextBlock x:Name="authorDisplay"></TextBlock>
+            <TextBlock FontSize="20">Version:</TextBlock>
+            <TextBlock x:Name="versionDisplay"></TextBlock>
+            <TextBlock FontSize="20">Description:</TextBlock>
+            <TextBlock x:Name="descriptionDisplay" TextWrapping="WrapWithOverflow"></TextBlock>
+            <TextBlock FontSize="20">Header background:</TextBlock>
+            <TextBlock x:Name="headerBackgroundDisplay"></TextBlock>
+            <TextBlock FontSize="20">Icon background:</TextBlock>
+            <TextBlock x:Name="iconBackgroundDisplay"></TextBlock>
+            <TextBlock FontSize="20">Black text on header?</TextBlock>
+            <TextBlock x:Name="foregroundDislay"></TextBlock>
+        </StackPanel>
     </Grid>
 </Window>

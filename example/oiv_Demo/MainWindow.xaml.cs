@@ -28,7 +28,17 @@ namespace oiv_Demo
             muhOIV.AddLog(logRichTextbox);
             muhOIV.Open();
             oivIconDisplay.ImageSource = muhOIV.GetIcon();
-            this.Title = muhOIV.GetProperty(OIVlib.OIV.Package.Name);
+            nameDisplay.Text = muhOIV.GetProperty(OIVlib.OIV.Package.PackageName);
+            authorDisplay.Text = muhOIV.GetProperty(OIVlib.OIV.Package.AuthorName);
+            versionDisplay.Text = muhOIV.GetProperty(OIVlib.OIV.Package.Version);
+            descriptionDisplay.Text = muhOIV.GetProperty(OIVlib.OIV.Package.Description);
+            foregroundDislay.Text = muhOIV.BlackHeaderForeground().ToString();
+
+            headerBackgroundDisplay.Text = muhOIV.GetProperty(OIVlib.OIV.Package.HeaderBackground);
+            headerBackgroundDisplay.Foreground = muhOIV.HeaderBackgroundBrush();
+
+            iconBackgroundDisplay.Text = muhOIV.GetProperty(OIVlib.OIV.Package.IconBackground);
+            iconBackgroundDisplay.Foreground = muhOIV.IconBackgroundBrush();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

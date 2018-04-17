@@ -7,9 +7,13 @@ using System.Drawing;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Linq;
+using System.Windows.Media;
 
 namespace oiv_Demo.OIVlib
 {
+    /// <summary>
+    /// OpenIV's OIV 
+    /// </summary>
     class OIV
     {
         public string ZipPath { private set; get; }
@@ -22,12 +26,14 @@ namespace oiv_Demo.OIVlib
 
         public OIV(string path)
         {
+            if (!File.Exists(path)) { throw new FileNotFoundException(); }
             ZipPath = path;
             HasBeenOpened = false;
         }
 
         public OIV(string path, System.Windows.Controls.RichTextBox rtb)
         {
+            if (!File.Exists(path)) { throw new FileNotFoundException(); }
             ZipPath = path;
             logTextbox = rtb;
             logTextbox.IsReadOnly = true;
@@ -97,7 +103,7 @@ namespace oiv_Demo.OIVlib
                     foreach (var process in FileUtil.WhoIsLocking(file)) { MessageBox.Show($"{process.ToString()} is preventing the file from being deleted"); }
                 }
             }
-            foreach(var dir in Directory.GetDirectories(RootFolder))
+            foreach (var dir in Directory.GetDirectories(RootFolder))
             {
                 Directory.Delete(dir, true);
             }
@@ -117,7 +123,7 @@ namespace oiv_Demo.OIVlib
             string[] searchResult = Directory.GetFiles(ExtractedPath, "assembly.xml", SearchOption.AllDirectories);
             if (searchResult.Length > 0)
             {
-                RootFolder = Path.GetDirectoryName(searchResult[0]); 
+                RootFolder = Path.GetDirectoryName(searchResult[0]);
             }
             else
             {
@@ -154,11 +160,29 @@ namespace oiv_Demo.OIVlib
 
         public enum Package
         {
-            Name,
+            /// <summary>
+            /// OIV Package Name
+            /// </summary>
+            PackageName,
+            /// <summary>
+            /// OIV Author Name
+            /// </summary>
+            AuthorName,
+            /// <summary>
+            /// OIV Package Mod Version
+            /// </summary>
             Version,
-            DisplayName,
+            /// <summary>
+            /// OIV Package Description
+            /// </summary>
             Description,
+            /// <summary>
+            /// OIV Hex formatted header background colour
+            /// </summary>
             HeaderBackground,
+            /// <summary>
+            /// OIV Icon Background
+            /// </summary>
             IconBackground
         }
 
@@ -168,34 +192,102 @@ namespace oiv_Demo.OIVlib
         //Maybe use XMLReader if files seem to be too big for XDocument to load them properly
         private void LoadXML()
         {
-            XDocument doc = XDocument.Load($"{RootFolder}\\assembly.xml");
+            if (xmlLoaded) { return; }
+            XDocument doc = XDocument.Load($"{RootFolder}\\assembly.xml", LoadOptions.None);
             ContentXML = doc;
             xmlLoaded = true;
         }
 
+        /// <summary>
+        /// Returns custom oiv properties
+        /// </summary>
         public string GetProperty(Package package)
         {
             if (!xmlLoaded) { LoadXML(); }
             switch (package)
             {
-                case Package.Name:
-                    var name = ContentXML.Root.Elements().Select(x => x.Element("name"));
-                    return name.First().Value;
+                case Package.PackageName:
+                    var packageName = ContentXML.Root.Elements().Select(x => x.Element("name"));
+                    return packageName.First().Value;
+                case Package.AuthorName:
+                    foreach (var element in ContentXML.Root.Descendants().Descendants())
+                    {
+                        if (element.Name.LocalName == "displayName")
+                        {
+                            return element.Value;
+                        }
+                    }
+                    throw new InvalidOperationException("Assembly.xml is not valid");
                 case Package.Version:
-                    break;
-                case Package.DisplayName:
+                    string version = "";
+                    foreach (var element in ContentXML.Root.Descendants().Descendants())
+                    {
+                        if (element.Name.LocalName == "major") { version = element.Value; }
+                        if (element.Name.LocalName == "minor") { return $"{version}.{element.Value}"; }
+                    }
                     break;
                 case Package.Description:
-                    break;
+                    var description = ContentXML.Root.Elements().Select(x => x.Element("description"));
+                    return description.First().Value;
                 case Package.HeaderBackground:
+                    foreach (var element in ContentXML.Root.Descendants().Descendants())
+                    {
+                        if (element.Name.LocalName == "headerBackground")
+                        {
+                            if (!element.Value.Contains("$")) { return element.Value; }
+                            else { return element.Value.Replace("$", "#"); } 
+                        }
+                    }
                     break;
                 case Package.IconBackground:
-                    break;
-                default:
+                    foreach (var element in ContentXML.Root.Descendants().Descendants())
+                    {
+                        if (element.Name.LocalName == "iconBackground")
+                        {
+                            if (!element.Value.Contains("$")) { return element.Value; }
+                            else { return element.Value.Replace("$", "#"); }
+                        }
+                    }
                     break;
             }
             return "";
         }
-        
+
+        public bool BlackHeaderForeground()
+        {
+            foreach (var element in ContentXML.Root.Descendants().Descendants())
+            {
+                if (element.Name.LocalName == "headerBackground")
+                {
+                    if (element.HasAttributes)
+                    {
+                        foreach (var attrib in element.Attributes())
+                        {
+                            if(attrib.Name.LocalName == "useBlackTextColor")
+                            {
+                                if (attrib.Value.ToLower() == "true") { return true; }
+                                else { return false; }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        public System.Windows.Media.Brush IconBackgroundBrush()
+        {
+            var converter = new BrushConverter();
+            var iconBrush = (System.Windows.Media.Brush)converter.ConvertFromString(GetProperty(Package.IconBackground));
+            return iconBrush;
+        }
+
+        public System.Windows.Media.Brush HeaderBackgroundBrush()
+        {
+            var converter = new BrushConverter();
+            var headerBrush = (System.Windows.Media.Brush)converter.ConvertFromString(GetProperty(Package.HeaderBackground));
+            return headerBrush;
+        }
+
     }
 }
