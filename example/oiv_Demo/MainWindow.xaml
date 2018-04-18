@@ -39,6 +39,8 @@
             <TextBlock x:Name="iconBackgroundDisplay"></TextBlock>
             <TextBlock FontSize="20">Black text on header?</TextBlock>
             <TextBlock x:Name="foregroundDislay"></TextBlock>
+            <TextBlock FontSize="20">Version tag:</TextBlock>
+            <TextBlock x:Name="tagDisplay"></TextBlock>
         </StackPanel>
     </Grid>
 </Window>

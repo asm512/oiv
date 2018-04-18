@@ -29,7 +29,7 @@ namespace oiv_Demo
 
         private void ReadOIV()
         {
-            var muhOIV = new OIV("oivSample.oiv");
+            var muhOIV = new OIV("oivSample.zip");
             muhOIV.AddLog(logRichTextbox);
             muhOIV.Open();
             oivIconDisplay.ImageSource = muhOIV.GetIcon();
@@ -45,12 +45,14 @@ namespace oiv_Demo
             iconBackgroundDisplay.Text = muhOIV.GetProperty(OIV.Package.IconBackground);
             iconBackgroundDisplay.Foreground = muhOIV.IconBackgroundBrush();
 
+            string tagVersion = muhOIV.GetProperty(OIV.Package.Tag);
+
+            if (tagVersion != null) { tagDisplay.Text = tagVersion; }
             muhOIV.Dispose();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-
         }
     }
 }

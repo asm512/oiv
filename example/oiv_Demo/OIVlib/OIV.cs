@@ -44,10 +44,7 @@ namespace oiv_Demo.OIVlib
 
         private void AppendtoVisibleLog(string msg) => logTextbox.AppendText(msg + "\r\n");
 
-        public void AddLog(System.Windows.Controls.RichTextBox rtb)
-        {
-            logTextbox = rtb;
-        }
+        public void AddLog(System.Windows.Controls.RichTextBox rtb) => logTextbox = rtb;
 
         /// <summary>
         /// Opens/Extracts the OIV so edits can be made
@@ -114,10 +111,10 @@ namespace oiv_Demo.OIVlib
         /// <summary>
         /// Check whether the object is a valid OIV archive
         /// </summary>
-        public bool IsValidOIV()
+        public Tuple<bool, string> IsValidOIV()
         {
-            if (Directory.GetFiles(ExtractedPath, "assembly.xml", SearchOption.AllDirectories).Length > 0) { return true; }
-            else { return false; }
+            if (Directory.GetFiles(ExtractedPath, "assembly.xml", SearchOption.AllDirectories).Length > 0) { return Tuple.Create(true, ""); }
+            else { return Tuple.Create(false, ""); }
         }
 
         private void SetRootFolder()
@@ -175,6 +172,10 @@ namespace oiv_Demo.OIVlib
             /// </summary>
             Version,
             /// <summary>
+            /// Version tag e.g. Alpha, Beta, Stable
+            /// </summary>
+            Tag,
+            /// <summary>
             /// OIV Package Description
             /// </summary>
             Description,
@@ -185,7 +186,7 @@ namespace oiv_Demo.OIVlib
             /// <summary>
             /// OIV Icon Background
             /// </summary>
-            IconBackground
+            IconBackground,
         }
 
         private XDocument ContentXML;
@@ -228,6 +229,15 @@ namespace oiv_Demo.OIVlib
                         if (element.Name.LocalName == "minor") { return $"{version}.{element.Value}"; }
                     }
                     break;
+                case Package.Tag:
+                    foreach (var element in ContentXML.Root.Descendants().Descendants())
+                    {
+                        if (element.Name.LocalName == "tag")
+                        {
+                            return element.Value;
+                        }
+                    }
+                    return null;
                 case Package.Description:
                     var description = ContentXML.Root.Elements().Select(x => x.Element("description"));
                     return description.First().Value;
