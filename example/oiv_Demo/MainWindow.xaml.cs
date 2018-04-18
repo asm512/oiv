@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using oiv_Demo.OIVlib;
 using System.Windows.Shapes;
 
 namespace oiv_Demo
@@ -20,35 +21,36 @@ namespace oiv_Demo
     /// </summary>
     public partial class MainWindow : Window
     {
-        private OIVlib.OIV muhOIV = new OIVlib.OIV("oivSample.zip");
-
         public MainWindow()
         {
             InitializeComponent();
+            ReadOIV();
+        }
+
+        private void ReadOIV()
+        {
+            var muhOIV = new OIV("oivSample.oiv");
             muhOIV.AddLog(logRichTextbox);
             muhOIV.Open();
             oivIconDisplay.ImageSource = muhOIV.GetIcon();
-            nameDisplay.Text = muhOIV.GetProperty(OIVlib.OIV.Package.PackageName);
-            authorDisplay.Text = muhOIV.GetProperty(OIVlib.OIV.Package.AuthorName);
-            versionDisplay.Text = muhOIV.GetProperty(OIVlib.OIV.Package.Version);
-            descriptionDisplay.Text = muhOIV.GetProperty(OIVlib.OIV.Package.Description);
+            nameDisplay.Text = muhOIV.GetProperty(OIV.Package.PackageName);
+            authorDisplay.Text = muhOIV.GetProperty(OIV.Package.AuthorName);
+            versionDisplay.Text = muhOIV.GetProperty(OIV.Package.Version);
+            descriptionDisplay.Text = muhOIV.GetProperty(OIV.Package.Description);
             foregroundDislay.Text = muhOIV.BlackHeaderForeground().ToString();
 
-            headerBackgroundDisplay.Text = muhOIV.GetProperty(OIVlib.OIV.Package.HeaderBackground);
+            headerBackgroundDisplay.Text = muhOIV.GetProperty(OIV.Package.HeaderBackground);
             headerBackgroundDisplay.Foreground = muhOIV.HeaderBackgroundBrush();
 
-            iconBackgroundDisplay.Text = muhOIV.GetProperty(OIVlib.OIV.Package.IconBackground);
+            iconBackgroundDisplay.Text = muhOIV.GetProperty(OIV.Package.IconBackground);
             iconBackgroundDisplay.Foreground = muhOIV.IconBackgroundBrush();
+
+            muhOIV.Dispose();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            Cleanup();
-        }
 
-        private void Cleanup()
-        {
-            muhOIV.Close();
         }
     }
 }

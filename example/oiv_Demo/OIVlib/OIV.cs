@@ -14,7 +14,7 @@ namespace oiv_Demo.OIVlib
     /// <summary>
     /// OpenIV's OIV 
     /// </summary>
-    class OIV
+    class OIV : IDisposable
     {
         public string ZipPath { private set; get; }
         public string ExtractedPath { private set; get; }
@@ -90,16 +90,18 @@ namespace oiv_Demo.OIVlib
         /// <summary>
         /// Closes the OIV package and disposes of any files
         /// </summary>
-        public void Close()
+        public void Cleanup()
         {
             foreach (var file in Directory.GetFiles(RootFolder))
             {
                 try
                 {
-                    if (!file.Contains("icon")) { File.Delete(file); }
+                    //if (!file.Contains("icon")) { File.Delete(file); }
+                    File.Delete(file);
                 }
                 catch (Exception)
                 {
+                    //TODO: Dispose of the stream in memory
                     foreach (var process in FileUtil.WhoIsLocking(file)) { MessageBox.Show($"{process.ToString()} is preventing the file from being deleted"); }
                 }
             }
@@ -289,5 +291,6 @@ namespace oiv_Demo.OIVlib
             return headerBrush;
         }
 
+        public void Dispose() => Cleanup();
     }
 }
