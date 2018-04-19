@@ -78,7 +78,7 @@ namespace oiv_Demo.OIVlib
                 byte[] buffer = new byte[4096]; //4096 is optimal for performance, noticeable especially for Zips > 1Gb
                 Stream zipStream = zf.GetInputStream(zipEntry);
 
-                String fullZipToPath = Path.Combine(oivExtractionPath, entryFileName);
+                string fullZipToPath = Path.Combine(oivExtractionPath, entryFileName);
                 string directoryName = Path.GetDirectoryName(fullZipToPath);
                 if (directoryName.Length > 0) { Directory.CreateDirectory(directoryName); };
 
@@ -119,7 +119,7 @@ namespace oiv_Demo.OIVlib
         }
 
         /// <summary>
-        /// Check whether the object is a valid OIV archive
+        /// Check whether the object is a valid OIV archive, value2 is archive type e.g Five
         /// </summary>
         public Tuple<bool, string> IsValidOIV()
         {

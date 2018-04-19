@@ -46,9 +46,7 @@ namespace oiv_Demo
             iconBackgroundDisplay.Foreground = muhOIV.IconBackgroundBrush();
 
             string tagVersion = muhOIV.GetProperty(OIV.Package.Tag);
-
             if (tagVersion != null) { tagDisplay.Text = tagVersion; }
-            muhOIV.Dispose();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
