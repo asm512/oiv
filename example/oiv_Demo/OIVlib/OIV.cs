@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Linq;
 using System.Windows.Media;
+using System.Windows.Controls;
 
 namespace oiv_Demo.OIVlib
 {
@@ -20,7 +21,11 @@ namespace oiv_Demo.OIVlib
         public string ExtractedPath { private set; get; }
         public bool HasBeenOpened { private set; get; }
         public string RootFolder { private set; get; }
-        private System.Windows.Controls.RichTextBox logTextbox = null;
+        private RichTextBox logTextbox = null;
+        public bool IsDisposed { private set; get; }
+
+        private readonly InvalidOperationException ObjectNotOpened = new InvalidOperationException("OIV Object has not been opened");
+        private readonly InvalidOperationException ObjectDisposed = new InvalidOperationException("OIV Object has been disposed of and cannot be used");
 
         #region Constructor
 
@@ -29,6 +34,7 @@ namespace oiv_Demo.OIVlib
             if (!File.Exists(path)) { throw new FileNotFoundException(); }
             ZipPath = path;
             HasBeenOpened = false;
+            IsDisposed = false;
         }
 
         public OIV(string path, System.Windows.Controls.RichTextBox rtb)
@@ -38,13 +44,14 @@ namespace oiv_Demo.OIVlib
             logTextbox = rtb;
             logTextbox.IsReadOnly = true;
             HasBeenOpened = false;
+            IsDisposed = false;
         }
 
-        #endregion Ctor
+        #endregion
 
         private void AppendtoVisibleLog(string msg) => logTextbox.AppendText(msg + "\r\n");
 
-        public void AddLog(System.Windows.Controls.RichTextBox rtb) => logTextbox = rtb;
+        public void AddLog(RichTextBox rtb) => logTextbox = rtb;
 
         /// <summary>
         /// Opens/Extracts the OIV so edits can be made
@@ -52,6 +59,7 @@ namespace oiv_Demo.OIVlib
         /// <param name="path">Explict path to which to extract</param>
         public void Open(string path = "")
         {
+            if (IsDisposed) { throw ObjectDisposed; }
             if (logTextbox != null) { AppendtoVisibleLog($"Opening {ZipPath}"); }
             if (HasBeenOpened) { if (logTextbox != null) { AppendtoVisibleLog("OIV package has already been extracted."); } throw new InvalidOperationException("OIV package has already been extracted."); }
             string oivExtractionPath;
@@ -89,6 +97,7 @@ namespace oiv_Demo.OIVlib
         /// </summary>
         public void Cleanup()
         {
+            if (!HasBeenOpened) { throw ObjectNotOpened; }
             foreach (var file in Directory.GetFiles(RootFolder))
             {
                 try
@@ -106,6 +115,7 @@ namespace oiv_Demo.OIVlib
             {
                 Directory.Delete(dir, true);
             }
+            IsDisposed = true;
         }
 
         /// <summary>
@@ -113,12 +123,14 @@ namespace oiv_Demo.OIVlib
         /// </summary>
         public Tuple<bool, string> IsValidOIV()
         {
+            if (IsDisposed) { throw ObjectDisposed; }
             if (Directory.GetFiles(ExtractedPath, "assembly.xml", SearchOption.AllDirectories).Length > 0) { return Tuple.Create(true, ""); }
             else { return Tuple.Create(false, ""); }
         }
 
         private void SetRootFolder()
         {
+            if (IsDisposed) { throw ObjectDisposed; }
             string[] searchResult = Directory.GetFiles(ExtractedPath, "assembly.xml", SearchOption.AllDirectories);
             if (searchResult.Length > 0)
             {
@@ -137,7 +149,8 @@ namespace oiv_Demo.OIVlib
         /// <returns>OIV Icon</returns>
         public BitmapImage GetIcon()
         {
-            if (!HasBeenOpened) { throw new InvalidOperationException("OIV package has not been opened"); }
+            if (IsDisposed) { throw ObjectDisposed; }
+            if (!HasBeenOpened) { throw ObjectNotOpened; }
             BitmapImage image = new BitmapImage(new Uri($@"{RootFolder}\icon.png", UriKind.Absolute));
             return image;
             //return ConvertBitmap(new Bitmap($@"{RootFolder}\icon.png"));
@@ -145,6 +158,7 @@ namespace oiv_Demo.OIVlib
 
         private BitmapImage ConvertBitmap(Bitmap src)
         {
+            if (IsDisposed) { throw ObjectDisposed; }
             using (MemoryStream ms = new MemoryStream())
             {
                 ((System.Drawing.Bitmap)src).Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
@@ -195,6 +209,7 @@ namespace oiv_Demo.OIVlib
         //Maybe use XMLReader if files seem to be too big for XDocument to load them properly
         private void LoadXML()
         {
+            if (IsDisposed) { throw ObjectDisposed; }
             if (xmlLoaded) { return; }
             XDocument doc = XDocument.Load($"{RootFolder}\\assembly.xml", LoadOptions.None);
             ContentXML = doc;
@@ -206,6 +221,7 @@ namespace oiv_Demo.OIVlib
         /// </summary>
         public string GetProperty(Package package)
         {
+            if (IsDisposed) { throw ObjectDisposed; }
             if (!xmlLoaded) { LoadXML(); }
             switch (package)
             {
@@ -267,6 +283,7 @@ namespace oiv_Demo.OIVlib
 
         public bool BlackHeaderForeground()
         {
+            if (IsDisposed) { throw ObjectDisposed; }
             foreach (var element in ContentXML.Root.Descendants().Descendants())
             {
                 if (element.Name.LocalName == "headerBackground")
@@ -289,6 +306,7 @@ namespace oiv_Demo.OIVlib
 
         public System.Windows.Media.Brush IconBackgroundBrush()
         {
+            if (IsDisposed) { throw ObjectDisposed; }
             var converter = new BrushConverter();
             var iconBrush = (System.Windows.Media.Brush)converter.ConvertFromString(GetProperty(Package.IconBackground));
             return iconBrush;
@@ -296,6 +314,7 @@ namespace oiv_Demo.OIVlib
 
         public System.Windows.Media.Brush HeaderBackgroundBrush()
         {
+            if (IsDisposed) { throw ObjectDisposed; }
             var converter = new BrushConverter();
             var headerBrush = (System.Windows.Media.Brush)converter.ConvertFromString(GetProperty(Package.HeaderBackground));
             return headerBrush;
