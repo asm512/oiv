@@ -1,4 +1,4 @@
 
 # oiv
 
-.NET Library for parsing OpenIV's `.oiv` files.
+.NET Library for reading OpenIV's `.oiv` files.
