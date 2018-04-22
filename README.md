@@ -1,8 +1,3 @@
-
-# oiv
-
-.NET library for reading OpenIV's `.oiv` files.
-
 # oiv
 
 Library for reading OpenIV's `.oiv` files.
